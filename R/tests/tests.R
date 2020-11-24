@@ -1,0 +1,1 @@
+print(TRUE == TRUE)
