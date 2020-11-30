@@ -1,3 +1,5 @@
+library(assertthat)
+
 deriv <- function(density, x) {
   epsilon = .01
   return (log(density(x + epsilon) - log(density(x)))) / epsilon
@@ -10,6 +12,22 @@ cdf <- function(density) {
     range <- seq(lower, x, length.out = 1000)
     return(sum(density(range))*((x-lower)/length(range)))
   })
+}
+
+eval_inverse_cdf <- function(prob, cdf) {
+  # given a probability and a cdf function,
+  # find the x value that corresponds to the given prob
+  
+  assert_that(0<=prob)
+  assert_that(prob<=1)
+  
+  #TODO: use a better domain
+  lower <- -100
+  upper <- 100
+  centered_cdf = function(x) {
+    return(cdf(x)-prob)
+  }
+  return(uniroot(centered_cdf, lower=lower, upper=upper)$root)
 }
 
 
