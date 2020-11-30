@@ -15,3 +15,16 @@ test_that("test inverse cdf", {
   expect_equal(result,expected, tolerance=tol)
 })
 
+test_that("test deriv", {
+  # the deriv of the log normal dist d/dx log(e^(-x^2/2)/sqrt(2 π))= -x
+  x=3
+  result = deriv(dnorm, x)
+  expected = -x
+  expect_equal(result,expected, tolerance=1e-1)
+  
+  #unif should be 0
+  x=.3
+  result = deriv(dunif, x)
+  expected = 0
+  expect_equal(result,expected, tolerance=1e-1)
+})
