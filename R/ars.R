@@ -8,7 +8,7 @@ deriv <- function(density, x, epsilon=.001) {
   return(g_prime/density(x))
 }
 
-cdf <- function(density) {
+get_cdf <- function(density) {
   return (function(x) {
     # add lower bound of domain, calc number of points
     lower <- -10
