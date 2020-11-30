@@ -1,11 +1,14 @@
 library(assertthat)
 
-deriv <- function(density, x) {
-  epsilon = .01
-  return (log(density(x + epsilon) - log(density(x)))) / epsilon
+deriv <- function(density, x, epsilon=.001) {
+  #calculates the derivative of the log density, using the chain rule
+  # where f(x) = log(x) and g(x) = pdf, so
+  # d/dx f(g(x)) = g_prime(x)/g(x) 
+  g_prime = (((density(x + epsilon)) - ((density(x)))) / epsilon)
+  return(g_prime/density(x))
 }
 
-cdf <- function(density) {
+get_cdf <- function(density) {
   return (function(x) {
     # add lower bound of domain, calc number of points
     lower <- -10
