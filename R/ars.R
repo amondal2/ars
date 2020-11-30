@@ -3,6 +3,15 @@ deriv <- function(density, x) {
   return (log(density(x + epsilon) - log(density(x)))) / epsilon
 }
 
+cdf <- function(density) {
+  return (function(x) {
+    # add lower bound of domain, calc number of points
+    lower <- -10
+    range <- seq(lower, x, length.out = 1000)
+    return(sum(density(range))*((x-lower)/length(range)))
+  })
+}
+
 
 ars <- function(density, n_samples, k=5) {
   # todo validation: 1. check density is log-concave, N-samples > 0
