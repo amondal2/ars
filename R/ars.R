@@ -68,10 +68,10 @@ ars <- function(density, n_samples, k=5) {
     }
     return(log(density(x_j)) + (x-x_j)*deriv(density, x_j))
   }
-
+  
   s_k <- function(x) {
     #todo figure out bounds
-    return(exp(u_k(x))/integrate(u_k, z_j[1], z_j[k]))
+    return(exp(u_k(x))/integrate(u_k, z_j[1], z_j[k-1])$value)
   }
 
   l_k <- function(x) {
@@ -86,7 +86,9 @@ ars <- function(density, n_samples, k=5) {
       ((x_k[j+1]-x)*log(density(x_k[j]))+(x-x_k[j])*log(density(x_k[j+1])))/(x_k[j+1]-x_k[j])
     )
   }
-
+  
+  s_cdf <- get_cdf(s_k)
+  return(s_cdf(0))
 
 }
 
