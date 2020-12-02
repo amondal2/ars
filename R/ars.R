@@ -11,9 +11,8 @@ deriv <- function(density, x, epsilon=.001) {
 get_cdf <- function(density) {
   return (function(x) {
     # add lower bound of domain, calc number of points
-    lower <- -10
+    lower <- -25
     range <- seq(lower, x, length.out = 1000)
-    browser()
     return(sum(density(range))*((x-lower)/length(range)))
   })
 }
@@ -22,8 +21,8 @@ eval_inverse_cdf <- function(prob, cdf) {
   # given a probability and a cdf function,
   # find the x value that corresponds to the given prob
   
-  assert_that(0<=prob)
-  assert_that(prob<=1)
+  #assert_that(0<=prob)
+  #assert_that(prob<=1)
   
   #TODO: use a better domain
   lower <- -100
@@ -37,30 +36,32 @@ eval_inverse_cdf <- function(prob, cdf) {
 
 ars <- function(density, n_samples, k=5) {
   # todo validation: 1. check density is log-concave, N-samples > 0
-  x_k <- seq(-10, 10, length.out = 5)
+  x_k <- seq(-25, 25, length.out = k)
 
   if(density(-Inf) == 0) {
     # todo optimize how x1 is selected
-    x_k[1] <- -10
+    x_k[1] <- -25
   }
 
   if(density(Inf) == 0) {
     # todo optimize how x_k is selected
-    x_k[k] <- 10
+    x_k[k] <- 25
   }
 
   z_j <- sapply(1:(length(x_k) - 1), function(i) {
 
     # check if this should be symmetric
 
-    return(
-      log(density(x_k[i + 1])) - log(density(x_k[i])) - x_k[i + 1] * deriv(density, x_k[i +
-                                                                                          1]) + x_k[i] * deriv(density, x_k[i])
-    ) / (deriv(density, x_k[i]) - deriv(density, x_k[i + 1]))
+    return((log(density(x_k[i + 1])) - log(density(x_k[i])) - x_k[i + 1] * 
+              deriv(density, x_k[i + 1]) + x_k[i] * deriv(density, x_k[i])) / 
+                (deriv(density, x_k[i]) - deriv(density, x_k[i + 1])))
   })
+  
+  
 
 
   u_k <- function(x) {
+    x_j <- x_k[k]
     for(i in 1:length(z_j)) {
       if(z_j[i] > x) {
         x_j <- x_k[i]
@@ -70,9 +71,13 @@ ars <- function(density, n_samples, k=5) {
     return(log(density(x_j)) + (x-x_j)*deriv(density, x_j))
   }
   
+  exp_u_k <- function(x) {
+    return(exp(u_k(x)))
+  }
+  
   s_k <- function(x) {
     #todo figure out bounds
-    return(exp(u_k(x))/integrate(u_k, z_j[1], z_j[k-1])$value)
+    return(exp(sapply(x, u_k))/integrate(exp_u_k, -Inf, Inf)$value)
   }
 
   l_k <- function(x) {
@@ -88,8 +93,20 @@ ars <- function(density, n_samples, k=5) {
     )
   }
   
-  s_cdf <- get_cdf(s_k)
-  return(s_cdf(0))
+  x_star <- eval_inverse_cdf(runif(1), get_cdf(s_k))
+  w <- runif(1)
+  if (w <= exp(l_k(x_star) - u_k(x_star))) {
+    print("accept")
+  } else {
+    #todo figure out if we need derivative
+    if (w <= exp(density(x_star) - u_k(x_star))) {
+      print("accept")
+    } else {
+      print("reject")
+    }
+    
+  }
+  return(x_star)
 
 }
 
