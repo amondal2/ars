@@ -4,7 +4,7 @@ deriv <- function(density, x, epsilon=.001) {
   #calculates the derivative of the log density, using the chain rule
   # where f(x) = log(x) and g(x) = pdf, so
   # d/dx f(g(x)) = g_prime(x)/g(x) 
-  g_prime = (((density(x + epsilon)) - ((density(x)))) / epsilon)
+  g_prime = (density(x + epsilon) - density(x)) / epsilon
   return(g_prime/density(x))
 }
 
@@ -13,6 +13,7 @@ get_cdf <- function(density) {
     # add lower bound of domain, calc number of points
     lower <- -10
     range <- seq(lower, x, length.out = 1000)
+    browser()
     return(sum(density(range))*((x-lower)/length(range)))
   })
 }
