@@ -2,15 +2,16 @@ Package: ars
 Title: I Would Simply Adapt to the Rejection
 Version: 0.0.0.9000
 Authors@R: 
-    c(person(given = "Grant",
-           family = "Belsterling",
-           email = "grant.belsterling@berkeley.edu"
+    c(person("Grant", "Belsterling",
+           email = "grant.belsterling@berkeley.edu",  role = c("cre")
            ),
      person(given = "Agastya",
-           family = "Mondal"
+           family = "Mondal",
+           role = c("aut")
            ),
      person(given = "Marlon",
-           family = "Facey"
+           family = "Facey",
+           role = c("aut")
            ))
 Description: We implement adaptive rejection sampling, as per https://www.jstor.org/stable/2347565?seq=1.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
