@@ -1,113 +1,101 @@
-library(assertthat)
-
-deriv <- function(density, x, epsilon=.001) {
-  #calculates the derivative of the log density, using the chain rule
-  # where f(x) = log(x) and g(x) = pdf, so
-  # d/dx f(g(x)) = g_prime(x)/g(x) 
-  g_prime = (density(x + epsilon) - density(x)) / epsilon
-  return(g_prime/density(x))
-}
-
-get_cdf <- function(density) {
-  return (function(x) {
-    # add lower bound of domain, calc number of points
-    lower <- -25
-    range <- seq(lower, x, length.out = 1000)
-    return(sum(density(range))*((x-lower)/length(range)))
-  })
-}
-
-eval_inverse_cdf <- function(prob, cdf) {
-  # given a probability and a cdf function,
-  # find the x value that corresponds to the given prob
+#' Entrypoint for 'ars' package. Runs an adaptative 
+#' rejection sampling algorithm on a given probability density
+#' and returns the specified number of samples.
+#' @param density A function closure of the density to be sampled from
+#' @param n_samples The number of samples to sample from the distribution
+#' @param k Number of initial points from which to construct tangents
+#' @return samples numeric vector of samples from the specified distribution
+#' @export
+ars <- function(density, n_samples, k = 5) {
+  # should we be able to pass in params & domain?
+  assertthat::assert_that(
+    typeof(density) == "closure", 
+    msg = "Density is not a function."
+  )
   
-  #assert_that(0<=prob)
-  #assert_that(prob<=1)
+  assertthat::assert_that(
+    is.numeric(n_samples) & n_samples > 0,
+    msg = "Invalid n_samples parameter"
+  )
   
-  #TODO: use a better domain
-  lower <- -100
-  upper <- 100
-  centered_cdf = function(x) {
-    return(cdf(x)-prob)
-  }
-  return(uniroot(centered_cdf, lower=lower, upper=upper)$root)
-}
-
-
-ars <- function(density, n_samples, k=5) {
-  # todo validation: 1. check density is log-concave, N-samples > 0
-  x_k <- seq(-25, 25, length.out = k)
-
-  if(density(-Inf) == 0) {
+  abscissae <- seq(-25, 25, length.out = k)
+  samples <- vector()
+  
+  if (density(-Inf) == 0) {
     # todo optimize how x1 is selected
-    x_k[1] <- -25
+    abscissae[1] <- -25
   }
-
-  if(density(Inf) == 0) {
+  
+  if (density(Inf) == 0) {
     # todo optimize how x_k is selected
-    x_k[k] <- 25
+    abscissae[k] <- 25
   }
-
-  z_j <- sapply(1:(length(x_k) - 1), function(i) {
-
-    # check if this should be symmetric
-
-    return((log(density(x_k[i + 1])) - log(density(x_k[i])) - x_k[i + 1] * 
-              deriv(density, x_k[i + 1]) + x_k[i] * deriv(density, x_k[i])) / 
-                (deriv(density, x_k[i]) - deriv(density, x_k[i + 1])))
-  })
   
+  tangents <- calculate_tangents(abscissae, density)
   
-
-
-  u_k <- function(x) {
-    x_j <- x_k[k]
-    for(i in 1:length(z_j)) {
-      if(z_j[i] > x) {
-        x_j <- x_k[i]
+  upper_hull <- function(x) {
+    x_j <- abscissae[k]
+    for (i in 1:length(tangents)) {
+      if (tangents[i] > x[1]) {
+        x_j <- abscissae[i]
         break
       }
     }
-    return(log(density(x_j)) + (x-x_j)*deriv(density, x_j))
+    return(log(density(x_j)) + (x - x_j) * deriv(density, x_j))
   }
   
-  exp_u_k <- function(x) {
-    return(exp(u_k(x)))
+  exp_upper_hull <- function(x) {
+    return(exp(upper_hull(x)))
   }
   
-  s_k <- function(x) {
+  normalized_upper_hull <- function(x) {
     #todo figure out bounds
-    return(exp(sapply(x, u_k))/integrate(exp_u_k, -Inf, Inf)$value)
+    return(exp(sapply(x, upper_hull)) / integrate(exp_upper_hull, -Inf, Inf)$value)
   }
-
-  l_k <- function(x) {
-    #todo add check for x < x_1 or x > x_k
-    for(i in 1:(length(x_k)-1)) {
-      if(x_k[i+1]>x) {
+  
+  lower_hull <- function(x) {
+    if(x < abscissae[1] | x > abscissae[k]) return(-Inf)
+    
+    for (i in 1:(length(abscissae) - 1)) {
+      if (abscissae[i + 1] > x) {
         j <- i
         break
       }
     }
     return(
-      ((x_k[j+1]-x)*log(density(x_k[j]))+(x-x_k[j])*log(density(x_k[j+1])))/(x_k[j+1]-x_k[j])
-    )
+      (
+        (abscissae[j + 1] - x) * log(density(abscissae[j])) + 
+          (x - abscissae[j]) * log(density(abscissae[j + 1]))) / (abscissae[j + 1] - abscissae[j]))
   }
   
-  x_star <- eval_inverse_cdf(runif(1), get_cdf(s_k))
-  w <- runif(1)
-  if (w <= exp(l_k(x_star) - u_k(x_star))) {
-    print("accept")
-  } else {
-    #todo figure out if we need derivative
-    if (w <= exp(density(x_star) - u_k(x_star))) {
-      print("accept")
-    } else {
-      print("reject")
-    }
+  while (length(samples) < n_samples) {
+    sample <- sample_from_hull(normalized_upper_hull)
+    w <- runif(1)
     
+    # evaluate the hulls + density at the sampled point
+    lower_bound <- lower_hull(sample)
+    upper_bound <- upper_hull(sample)
+    log_density <- log(density(sample))
+    
+    
+    assertthat::assert_that(
+      lower_bound <= log_density & upper_bound >= log_density,
+      msg="Density is not log-concave."
+    )
+    
+    if (w <= exp(lower_bound - upper_bound)) {
+      # accept the sample
+      samples <- sort(c(samples, sample))
+    } else {
+      # update tangents and points
+      abscissae <- sort(c(abscissae, sample))
+      tangents <- calculate_tangents(abscissae, density)
+      
+      if (w <= exp(log_density - upper_bound)) {
+        # accept the sample only if this condition is met
+        samples <- sort(c(samples, sample))
+      }
+    }
   }
-  return(x_star)
-
+  return(samples)
 }
-
-
