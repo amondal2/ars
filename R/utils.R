@@ -6,7 +6,7 @@
 #' @return value of derivative of log-density at a given point
 deriv <- function(density, x, epsilon=.001) {
   g_prime <- (density(x + epsilon) - density(x)) / epsilon
-  return(g_prime/density(x))
+  return(round(g_prime/density(x), 6))
 }
 
 #' Numerically calculates the CDF for a given density
@@ -15,9 +15,12 @@ deriv <- function(density, x, epsilon=.001) {
 get_cdf <- function(density) {
   return (function(x) {
     # add lower bound of domain, calc number of points
-    lower <- -25
+    # do we need log density here?
+    lower <- -150
+    #assertthat::assert_that(lower <= x)
     range <- seq(lower, x, length.out = 1000)
-    return(sum(density(range))*((x-lower)/length(range)))
+    cdf_val <- sum(density(range))*((x-lower)/length(range))
+    return(cdf_val)
   })
 }
 
@@ -36,7 +39,8 @@ eval_inverse_cdf <- function(prob, cdf) {
   return(uniroot(
     centered_cdf,
     lower = lower,
-    upper = upper
+    upper = upper,
+    extendInt="yes"
   )$root)
 }
 
