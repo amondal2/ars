@@ -13,3 +13,28 @@ calculate_tangents <- function(abscissae, density) {
   
   return(tangents)
 }
+
+check_concavity <- function(abscissae, density) {
+  bools <- sapply(1:(length(abscissae) - 1), function(i) {
+    deriv_x_i <- deriv(density, abscissae[i])
+    deriv_x_i1 <- deriv(density,abscissae[i+1])
+    
+    if(deriv_x_i * deriv_x_i1 > 0) {
+      if(deriv_x_i - deriv_x_i1 > 0) {
+        return(TRUE)
+      }
+    } else if (deriv_x_i * deriv_x_i1 < 0) {
+      if(deriv_x_i > 0 & deriv_x_i1 < 0) {
+        return(TRUE)
+      }
+      return(FALSE)
+      
+    }
+  })
+  
+  if(sum(unlist(bools)) == (length(abscissae)-1)) {
+    return(TRUE)
+  }
+  # add assertions
+  return(FALSE)
+}

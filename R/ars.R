@@ -18,6 +18,8 @@ ars <- function(density, n_samples, k = 5) {
     msg = "Invalid n_samples parameter"
   )
   
+  
+  
   abscissae <- seq(-25, 25, length.out = k)
   samples <- vector()
   
@@ -35,6 +37,7 @@ ars <- function(density, n_samples, k = 5) {
   
   upper_hull <- function(x) {
     x_j <- abscissae[k]
+    # TODO fix tangent error
     for (i in 1:length(tangents)) {
       if (tangents[i] > x[1]) {
         x_j <- abscissae[i]
@@ -76,12 +79,6 @@ ars <- function(density, n_samples, k = 5) {
     lower_bound <- lower_hull(sample)
     upper_bound <- upper_hull(sample)
     log_density <- log(density(sample))
-    
-    
-    assertthat::assert_that(
-      lower_bound <= log_density & upper_bound >= log_density,
-      msg="Density is not log-concave."
-    )
     
     if (w <= exp(lower_bound - upper_bound)) {
       # accept the sample
