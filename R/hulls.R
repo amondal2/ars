@@ -1,6 +1,7 @@
 #' Calculates the intersections of the tangents of a set of 
 #' abscissae for a given density
 #' @param abscissae vector of points at which to calculate tangents & intersections
+#' @param density closure of the density of interest
 #' @return y values of the intersection points of the tangents
 calculate_tangents <- function(abscissae, density) {
   tangents <- sapply(1:(length(abscissae) - 1), function(i) {
