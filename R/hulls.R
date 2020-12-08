@@ -6,9 +6,9 @@
 calculate_tangents <- function(abscissae, density) {
   tangents <- sapply(1:(length(abscissae) - 1), function(i) {
     
-    return((log(density(abscissae[i + 1])) - log(density(abscissae[i])) - abscissae[i + 1] * 
-              deriv(density, abscissae[i + 1]) + abscissae[i] * deriv(density, abscissae[i])) / 
-             (deriv(density, abscissae[i]) - deriv(density, abscissae[i + 1])))
+    return((density(abscissae[i + 1]) - density(abscissae[i]) - abscissae[i + 1] * 
+              numDeriv::grad(density, abscissae[i + 1]) + abscissae[i] * numDeriv::grad(density, abscissae[i])) / 
+             (numDeriv::grad(density, abscissae[i]) - numDeriv::grad(density, abscissae[i + 1])))
   })
   
   return(tangents)
@@ -22,10 +22,9 @@ calculate_tangents <- function(abscissae, density) {
 #' @return boolean indicating whether the function is log-concave
 check_concavity <- function(abscissae, density) {
   pairwise_concavity <- sapply(1:(length(abscissae) - 1), function(i) {
-    deriv_x_i <- deriv(density, abscissae[i])
-    deriv_x_i1 <- deriv(density,abscissae[i+1])
-    # todo this is sometimes NaN
-    
+    deriv_x_i <- numDeriv::grad(density, abscissae[i])
+    deriv_x_i1 <- numDeriv::grad(density,abscissae[i+1])
+
     if(deriv_x_i * deriv_x_i1 > 0) {
       if(deriv_x_i - deriv_x_i1 > 0) {
         return(TRUE)

@@ -9,6 +9,12 @@ deriv <- function(density, x, epsilon=.001) {
   return(round(g_prime/density(x), 6))
 }
 
+get_log_density <- function(density) {
+  return(function(x) {
+    return(log(density(x)))
+  })
+}
+
 #' Numerically calculates the CDF for a given density
 #' @param density closure of the density of interest
 #' @return closure of the cdf which can be evaluated at a point
