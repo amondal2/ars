@@ -21,7 +21,7 @@ ars <- function(density, n_samples, k = 5) {
   log_density <- get_log_density(density)
   abscissae <- seq(-5, 5, length.out = k)
  
-  samples <- vector()
+  samples <- rep(0, n_samples)
   
   if (density(-Inf) == 0) {
     # todo optimize how x1 is selected
@@ -80,7 +80,8 @@ ars <- function(density, n_samples, k = 5) {
   dist <- distr::AbscontDistribution(d=normalized_upper_hull) 
   rdist <- distr::r(dist)   
   
-  while (length(samples) < n_samples) {
+  num_sampled <- 1
+  while (num_sampled <= n_samples) {
     sample <- rdist(1)
     w <- runif(1)
     
@@ -91,7 +92,8 @@ ars <- function(density, n_samples, k = 5) {
     
     if (w <= exp(lower_bound - upper_bound)) {
       # accept the sample
-      samples <- sort(c(samples, sample))
+      samples[num_sampled] <- sample
+      num_sampled <- num_sampled + 1
     } else {
       # update tangents and points, check concavity conditions
       # are still met
@@ -107,7 +109,8 @@ ars <- function(density, n_samples, k = 5) {
       
       if (w <= exp(sample_log_density - upper_bound)) {
         # accept the sample only if this condition is met
-        samples <- sort(c(samples, sample))
+        samples[num_sampled] <- sample
+        num_sampled <- num_sampled + 1
       }
     }
   }
