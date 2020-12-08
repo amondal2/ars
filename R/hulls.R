@@ -24,6 +24,7 @@ check_concavity <- function(abscissae, density) {
   pairwise_concavity <- sapply(1:(length(abscissae) - 1), function(i) {
     deriv_x_i <- deriv(density, abscissae[i])
     deriv_x_i1 <- deriv(density,abscissae[i+1])
+    # todo this is sometimes NaN
     
     if(deriv_x_i * deriv_x_i1 > 0) {
       if(deriv_x_i - deriv_x_i1 > 0) {

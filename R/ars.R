@@ -22,7 +22,7 @@ ars <- function(density, n_samples, k = 5) {
   is_concave <- check_concavity(abscissae, density)
   assertthat::assert_that(
     is_concave == TRUE,
-    "Density is not log-concave for given set of points."
+    msg = "Density is not log-concave for given set of points."
   )
   samples <- vector()
   
@@ -91,10 +91,12 @@ ars <- function(density, n_samples, k = 5) {
       # are still met
       abscissae <- sort(c(abscissae, sample))
       is_concave <- check_concavity(abscissae, density)
+      
       assertthat::assert_that(
         is_concave == TRUE,
-        "Density is not log-concave for given set of points."
+        msg = "Density is not log-concave for given set of points."
       )
+      
       tangents <- calculate_tangents(abscissae, density)
       
       if (w <= exp(log_density - upper_bound)) {
