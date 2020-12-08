@@ -24,7 +24,7 @@ ars <- function(density, n_samples, k = 5) {
     is_concave == TRUE,
     msg = "Density is not log-concave for given set of points."
   )
-  samples <- vector()
+  samples <- rep(0, n_samples)
   
   if (density(-Inf) == 0) {
     # todo optimize how x1 is selected
@@ -74,7 +74,8 @@ ars <- function(density, n_samples, k = 5) {
           (x - abscissae[j]) * log(density(abscissae[j + 1]))) / (abscissae[j + 1] - abscissae[j]))
   }
   
-  while (length(samples) < n_samples) {
+  num_sampled <- 1
+  while (num_sampled <= n_samples) {
     sample <- sample_from_hull(normalized_upper_hull)
     w <- runif(1)
     
@@ -85,7 +86,8 @@ ars <- function(density, n_samples, k = 5) {
     
     if (w <= exp(lower_bound - upper_bound)) {
       # accept the sample
-      samples <- sort(c(samples, sample))
+      samples[num_sampled] <- sample
+      num_sampled <- num_sampled + 1
     } else {
       # update tangents and points, check concavity conditions
       # are still met
@@ -101,7 +103,8 @@ ars <- function(density, n_samples, k = 5) {
       
       if (w <= exp(log_density - upper_bound)) {
         # accept the sample only if this condition is met
-        samples <- sort(c(samples, sample))
+        samples[num_sampled] <- sample
+        num_sampled <- num_sampled + 1
       }
     }
   }
