@@ -18,9 +18,12 @@ ars <- function(density, n_samples, k = 5) {
     msg = "Invalid n_samples parameter"
   )
   
-  
-  
   abscissae <- seq(-25, 25, length.out = k)
+  is_concave <- check_concavity(abscissae, density)
+  assertthat::assert_that(
+    is_concave == TRUE,
+    "Density is not log-concave for given set of points."
+  )
   samples <- vector()
   
   if (density(-Inf) == 0) {
@@ -84,8 +87,14 @@ ars <- function(density, n_samples, k = 5) {
       # accept the sample
       samples <- sort(c(samples, sample))
     } else {
-      # update tangents and points
+      # update tangents and points, check concavity conditions
+      # are still met
       abscissae <- sort(c(abscissae, sample))
+      is_concave <- check_concavity(abscissae, density)
+      assertthat::assert_that(
+        is_concave == TRUE,
+        "Density is not log-concave for given set of points."
+      )
       tangents <- calculate_tangents(abscissae, density)
       
       if (w <= exp(log_density - upper_bound)) {
