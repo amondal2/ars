@@ -77,12 +77,9 @@ ars <- function(density, n_samples, k = 5) {
           (x - abscissae[j]) * log_density(abscissae[j + 1])) / (abscissae[j + 1] - abscissae[j]))
   }
   
-  dist <- distr::AbscontDistribution(d=normalized_upper_hull) 
-  rdist <- distr::r(dist)   
-  
   num_sampled <- 1
   while (num_sampled <= n_samples) {
-    sample <- rdist(1)
+    sample <- sample_from_hull(normalized_upper_hull)
     w <- runif(1)
     
     # evaluate the hulls + density at the sampled point
