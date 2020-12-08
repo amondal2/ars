@@ -46,3 +46,16 @@ test_that("test cdf", {
   expect_equal(result,expected, tolerance=tol)
   
 })
+
+test_that("test calc tangents", {
+  # d/dx of log(std normal) = -x
+  abscis = c(-1,0)
+  
+  #tangent to 0 is  y = -1/2 log(2 π)
+  #and tangent line to -1 is  = x + 1 + 1/2 (-1 - log(2 π)) 
+  # and they intersect at x=-.5
+  expected = -.5
+  result = calculate_tangents(abscis, dnorm)
+  expect_equal(result,expected, tolerance=tol)
+  
+})
