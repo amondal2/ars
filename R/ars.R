@@ -6,7 +6,7 @@
 #' @param k Number of initial points from which to construct tangents
 #' @return samples numeric vector of samples from the specified distribution
 #' @export
-ars <- function(density, n_samples, k = 5) {
+ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   # should we be able to pass in params & domain?
   assertthat::assert_that(
     typeof(density) == "closure", 
@@ -18,52 +18,56 @@ ars <- function(density, n_samples, k = 5) {
     msg = "Invalid n_samples parameter"
   )
   
+  
   log_density <- get_log_density(density)
-  abscissae <- seq(-5, 5, length.out = k)
+  # todo fix warnings
+  mode <- nlm(function(x) {-1*log_density(x)}, 0)$estimate
+  
+  abscissae <- seq(mode-2*scale, mode+2*scale, length.out = k)
+  abscissae <- abscissae[density(abscissae) > 0]
  
   samples <- rep(0, n_samples)
   
-  if (density(-Inf) == 0) {
-    # todo optimize how x1 is selected
-    abscissae[1] <- -5
-  }
-  
-  if (density(Inf) == 0) {
-    # todo optimize how x_k is selected
-    abscissae[k] <- 5
-  }
-  
-  #is_concave <- check_concavity(abscissae, log_density)
-  # assertthat::assert_that(
-  #   is_concave == TRUE,
-  #   msg = "Density is not log-concave for given set of points."
-  # )
+  is_concave <- check_concavity(abscissae, log_density)
+  assertthat::assert_that(
+    is_concave == TRUE,
+    msg = "Density is not log-concave for given set of points."
+  )
   
   tangents <- calculate_tangents(abscissae, log_density)
   
   upper_hull <- function(x) {
-    x_j <- abscissae[k]
-    # TODO fix tangent error
-    for (i in 1:length(tangents)) {
-      if (tangents[i] > x[1]) {
-        x_j <- abscissae[i]
-        break
+   
+    upper_hull_vec <- function(val) {
+      x_j <- abscissae[length(abscissae)]
+      for (i in 1:length(tangents)) {
+        if (tangents[i] > val) {
+          x_j <- abscissae[i]
+          break
+        }
       }
+      
+      return(log_density(x_j) + (val - x_j) * numDeriv::grad(log_density, x_j, method="simple"))
     }
-    return(log_density(x_j) + (x - x_j) * numDeriv::grad(log_density, x_j))
+    
+    result <- sapply(x, upper_hull_vec)
+  #  result[density(x) <= 0] <- -Inf
+    return(result)
   }
   
   exp_upper_hull <- function(x) {
-    return(exp(upper_hull(x)))
+    result <- exp(upper_hull(x))
+    result[density(x) <= 0] <- 0
+    return(result)
   }
   
   normalized_upper_hull <- function(x) {
     #todo figure out bounds
-    return(exp(sapply(x, upper_hull)) / integrate(exp_upper_hull, -Inf, Inf)$value)
+    return(exp_upper_hull(x) / integrate(exp_upper_hull, -Inf, Inf)$value)
   }
   
   lower_hull <- function(x) {
-    if(x < abscissae[1] | x > abscissae[k]) return(-Inf)
+    if(x < abscissae[1] | x > abscissae[length(abscissae)]) return(-Inf)
     
     for (i in 1:(length(abscissae) - 1)) {
       if (abscissae[i + 1] > x) {
@@ -78,6 +82,7 @@ ars <- function(density, n_samples, k = 5) {
   }
   
   num_sampled <- 1
+  x <- seq(-10, 10, length.out = 50)
   while (num_sampled <= n_samples) {
     sample <- sample_from_hull(normalized_upper_hull)
     w <- runif(1)
@@ -95,12 +100,13 @@ ars <- function(density, n_samples, k = 5) {
       # update tangents and points, check concavity conditions
       # are still met
       abscissae <- sort(c(abscissae, sample))
-      #is_concave <- check_concavity(abscissae, log_density)
-      
-      # assertthat::assert_that(
-      #   is_concave == TRUE,
-      #   msg = "Density is not log-concave for given set of points."
-      # )
+      abscissae <- abscissae[density(abscissae) > 0]
+      is_concave <- check_concavity(abscissae, log_density)
+
+      assertthat::assert_that(
+        is_concave == TRUE,
+        msg = "Density is not log-concave for given set of points."
+      )
       
       tangents <- calculate_tangents(abscissae, log_density)
       
