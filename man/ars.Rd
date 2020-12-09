@@ -6,7 +6,7 @@
 rejection sampling algorithm on a given probability density
 and returns the specified number of samples.}
 \usage{
-ars(density, n_samples, k = 5)
+ars(density, n_samples, k = 4, location = 0, scale = 1)
 }
 \arguments{
 \item{density}{A function closure of the density to be sampled from}
@@ -14,6 +14,10 @@ ars(density, n_samples, k = 5)
 \item{n_samples}{The number of samples to sample from the distribution}
 
 \item{k}{Number of initial points from which to construct tangents}
+
+\item{location}{starting point at which to initialize sampling points, default 0}
+
+\item{scale}{value at which to space initial points default 1}
 }
 \value{
 samples numeric vector of samples from the specified distribution
