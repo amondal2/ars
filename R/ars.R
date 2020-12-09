@@ -20,11 +20,7 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   
   
   log_density <- get_log_density(density)
-  # todo fix warnings
-  mode <- nlm(function(x) {-1*log_density(x)}, 0)$estimate
-  
-  abscissae <- seq(mode-2*scale, mode+2*scale, length.out = k)
-  abscissae <- abscissae[density(abscissae) > 0]
+  abscissae <- generate_initial_abscisae(density, location, scale, k)
  
   samples <- rep(0, n_samples)
   
@@ -50,19 +46,19 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
       return(log_density(x_j) + (val - x_j) * numDeriv::grad(log_density, x_j, method="simple"))
     }
     
+    # use a vectorized version of the function for interop with R's integrate
     result <- sapply(x, upper_hull_vec)
-  #  result[density(x) <= 0] <- -Inf
     return(result)
   }
   
   exp_upper_hull <- function(x) {
     result <- exp(upper_hull(x))
+    # zero out invalid densities
     result[density(x) <= 0] <- 0
     return(result)
   }
   
   normalized_upper_hull <- function(x) {
-    #todo figure out bounds
     return(exp_upper_hull(x) / integrate(exp_upper_hull, -Inf, Inf)$value)
   }
   
@@ -82,7 +78,7 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   }
   
   num_sampled <- 1
-  x <- seq(-10, 10, length.out = 50)
+  
   while (num_sampled <= n_samples) {
     sample <- sample_from_hull(normalized_upper_hull)
     w <- runif(1)

@@ -16,3 +16,22 @@ sample_from_hull <- function(hull) {
   sample <- rdist(1)
   return(sample)
 }
+
+#' Generate the initial starting points for the algorithm
+#' by calculating the mode of the function and then choosing
+#' linearly spaced points around the mode
+#' @param density density of interest (a bounding hull in this context)
+#' @param location starting point of the mode-finding algorithm, default 0
+#' @param scale width of the spacing of the points around the model, default 1
+#' @param k number of points to initialize, default 4
+#' @return vector of points
+generate_initial_abscisae <- function(density, location=0, scale=1, k=4) {
+  log_density <- get_log_density(density)
+  # todo fix warnings
+  
+  mode <- nlm(function(x) {-1*log_density(x)}, location)$estimate
+  
+  abscissae <- seq(mode-2*scale, mode+2*scale, length.out = k)
+  abscissae <- abscissae[density(abscissae) > 0]
+  return(abscissae)
+}
