@@ -4,6 +4,8 @@
 #' @param density A function closure of the density to be sampled from
 #' @param n_samples The number of samples to sample from the distribution
 #' @param k Number of initial points from which to construct tangents
+#' @param location starting point at which to initialize sampling points, default 0
+#' @param scale value at which to space initial points default 1
 #' @return samples numeric vector of samples from the specified distribution
 #' @export
 ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
