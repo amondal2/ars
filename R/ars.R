@@ -35,7 +35,7 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   tangents <- calculate_tangents(abscissae, log_density)
   
   upper_hull <- function(x) {
-    upper_hull_vec <- function(val) {
+    get_xjs <- function(val) {
       x_j <- abscissae[length(abscissae)]
       for (i in 1:length(tangents)) {
         if (tangents[i] > val) {
@@ -43,12 +43,13 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
           break
         }
       }
-      
-      return(log_density(x_j) + (val - x_j) * numDeriv::grad(log_density, x_j, method="simple"))
+      return(x_j)
     }
+
+    x_js = sapply(x, get_xjs)
+    result = log_density(x_js) + (x - x_js) * numDeriv::grad(log_density, x_js, method="simple")
     
     # use a vectorized version of the function for interop with R's integrate
-    result <- sapply(x, upper_hull_vec)
     return(result)
   }
   
