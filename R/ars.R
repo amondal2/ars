@@ -35,7 +35,6 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   tangents <- calculate_tangents(abscissae, log_density)
   
   upper_hull <- function(x) {
-   
     upper_hull_vec <- function(val) {
       x_j <- abscissae[length(abscissae)]
       for (i in 1:length(tangents)) {
@@ -95,17 +94,10 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
       samples[num_sampled] <- sample
       num_sampled <- num_sampled + 1
     } else {
-      # update tangents and points, check concavity conditions
-      # are still met
+      # update tangents and points
       abscissae <- sort(c(abscissae, sample))
       abscissae <- abscissae[density(abscissae) > 0]
-      is_concave <- check_concavity(abscissae, log_density)
 
-      assertthat::assert_that(
-        is_concave == TRUE,
-        msg = "Density is not log-concave for given set of points."
-      )
-      
       tangents <- calculate_tangents(abscissae, log_density)
       
       if (w <= exp(sample_log_density - upper_bound)) {
@@ -115,5 +107,13 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
       }
     }
   }
+  
+  # check concavity before returning final results
+  is_concave <- check_concavity(abscissae, log_density)
+  assertthat::assert_that(
+    is_concave == TRUE,
+    msg = "Density is not log-concave for given set of points."
+  )
+  
   return(samples)
 }
