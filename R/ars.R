@@ -22,7 +22,7 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   
   
   log_density <- get_log_density(density)
-  abscissae <- generate_initial_abscisae(density, location, scale, k)
+  abscissae <- generate_initial_abscissae(density, location, scale, k)
  
   samples <- rep(0, n_samples)
   
