@@ -10,10 +10,10 @@ get_log_density <- function(density) {
 #' Generate a sample from a given density using distr library
 #' @param hull density of interest (a bounding hull in this context)
 #' @return sample from the density
-sample_from_hull <- function(hull) {
+sample_from_hull <- function(hull, n_samples=1) {
   dist <- distr::AbscontDistribution(d=hull) 
   rdist <- distr::r(dist)   
-  sample <- rdist(1)
+  sample <- rdist(n_samples)
   return(sample)
 }
 
