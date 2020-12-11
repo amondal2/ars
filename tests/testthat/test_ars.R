@@ -1,7 +1,16 @@
 context("ars")
 
 tol = 1e-1
-p_value_min = .001
+p_value_min = .01
+
+
+test_that("test resulting distribution", {
+  n = 100
+  sample = ars(dnorm,n)
+  p_val = shapiro.test(sample)$p.value
+  expect(p_val >= p_value_min, "rnorm p-vaue below limit for normal case")
+  
+})
 
 
 test_that("test deriv", {
