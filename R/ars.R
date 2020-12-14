@@ -33,12 +33,14 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   )
   
   tangents <- calculate_tangents(abscissae, log_density)
+  deriv_at_absc <- numDeriv::grad(log_density, abscissae, method="simple")
   
   upper_hull <- function(x) {
     intervals = findInterval(x, tangents)
     x_js = abscissae[intervals+1]
     x_js[is.na(x_js)] <- abscissae[length(abscissae)]
-    result = log_density(x_js) + (x - x_js) * numDeriv::grad(log_density, x_js, method="simple")
+    derivs = deriv_at_absc[match(x_js, abscissae)]
+    result = log_density(x_js) + (x - x_js) * derivs
     
     # use a vectorized version of the function for interop with R's integrate
     return(result)
@@ -91,6 +93,8 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
       abscissae <- sort(c(abscissae, sample))
       abscissae <- abscissae[density(abscissae) > 0]
 
+      # update all cached values that change when the abscissae change
+      deriv_at_absc = numDeriv::grad(log_density, abscissae, method="simple")
       tangents <- calculate_tangents(abscissae, log_density)
       integration_factor <- integrate(exp_upper_hull, -Inf, Inf)$value
       
