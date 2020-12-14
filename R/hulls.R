@@ -4,6 +4,14 @@
 #' @param density closure of the density of interest
 #' @return y values of the intersection points of the tangents
 calculate_tangents <- function(abscissae, density) {
+  assertthat::assert_that(
+    is.vector(abscissae),
+    msg = "Abscissae is not a list"
+  )
+  assertthat::assert_that(
+    typeof(density) == "closure",
+    msg = "Density is not a closure"
+  )
   tangents <- sapply(1:(length(abscissae) - 1), function(i) {
     
     return((density(abscissae[i + 1]) - density(abscissae[i]) - abscissae[i + 1] * 
@@ -22,6 +30,14 @@ calculate_tangents <- function(abscissae, density) {
 #' @param density closure of the density of interest
 #' @return boolean indicating whether the function is log-concave
 check_concavity <- function(abscissae, density) {
+  assertthat::assert_that(
+    is.vector(abscissae),
+    msg = "Abscissae is not a list"
+  )
+  assertthat::assert_that(
+    typeof(density) == "closure",
+    msg = "Density is not a closure"
+  )
   derivatives <- round(numDeriv::grad(density, abscissae), 6)
   
   pairwise_concavity <- sapply(1:(length(derivatives) - 1), function(i) {

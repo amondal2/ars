@@ -120,3 +120,4 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   samples <- samples[1:n_samples] # trim extra samples from final batch
   return(samples)
 }
+

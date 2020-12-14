@@ -2,6 +2,10 @@
 #' @param density density of interest 
 #' @return closure representing the log density
 get_log_density <- function(density) {
+  assertthat::assert_that(
+    typeof(density) == "closure", 
+    msg = "Density is not a function."
+  )
   return(function(x) {
     return(log(density(x)))
   })
@@ -11,6 +15,14 @@ get_log_density <- function(density) {
 #' @param hull density of interest (a bounding hull in this context)
 #' @return sample from the density
 sample_from_hull <- function(hull, n_samples=1) {
+  assertthat::assert_that(
+    typeof(hull) == "closure",
+    msg = "Hull is not a closure"
+  )
+  assertthat::assert_that(
+    is.numeric(n_samples) & n_samples > 0,
+    msg = "Invalid n_samples parameter"
+  )
   dist <- distr::AbscontDistribution(d=hull) 
   rdist <- distr::r(dist)   
   sample <- rdist(n_samples)
@@ -26,6 +38,23 @@ sample_from_hull <- function(hull, n_samples=1) {
 #' @param k number of points to initialize, default 4
 #' @return vector of points
 generate_initial_abscissae <- function(density, location=0, scale=1, k=4) {
+  assertthat::assert_that(
+    typeof(density) == "closure", 
+    msg = "Density is not a function."
+  )
+  assertthat::assert_that(
+    is.numeric(k) & k > 0,
+    msg = "Invalid number of starting points"
+  )
+  assertthat::assert_that(
+    is.numeric(location),
+    msg = "Invalid location parameter"
+  )
+  assertthat::assert_that(
+    is.numeric(scale) & scale > 0,
+    msg = "Invalid scale parameter"
+  )
+  
   log_density <- get_log_density(density)
   
   # nlm prints warnings if the density is 0 or undefined for x < 0 (eg. exponential distribution), but
