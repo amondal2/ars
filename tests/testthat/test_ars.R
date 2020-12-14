@@ -2,6 +2,7 @@ context("ars")
 
 tol = 1e-1
 p_value_min = .01
+n = 100
 
 test_that("test input validation", {
   density <- 5
@@ -12,7 +13,6 @@ test_that("test input validation", {
 })
 
 test_that("test resulting distribution", {
-  n = 100
   sample = ars(dnorm,n)
   p_val = shapiro.test(sample)$p.value
   expect(p_val >= p_value_min, "rnorm p-value below limit for normal case")
@@ -20,12 +20,37 @@ test_that("test resulting distribution", {
 })
 
 
-test_that("test two samples came from the same distribution", {
-  n <- 500
+test_that("test exponential distribution", {
   x <- rexp(n)
-  y <- ars(dexp, n)
+  y <- ars(dexp, n, location=1)
   p_val <- ks.test(x,y)$p.value
-  expect(p_val >= p_value_min, "rnorm p-value below limit for normal case")
+  expect(p_val >= p_value_min, "rnorm p-value below limit for exponential case")
+})
+
+test_that("test chisq distribution", {
+  df <- 5
+  x <- rchisq(n,df)
+  y <- ars(function(x){dchisq(x, df)}, n, location=1)
+  p_val <- ks.test(x,y)$p.value
+  expect(p_val >= p_value_min, "rnorm p-value below limit for chisq case")
+})
+
+test_that("test gamma distribution", {
+  alpha <- 6
+  beta <- 9
+  x <- rgamma(n,alpha,beta)
+  y <- ars(function(x){dgamma(x, alpha,beta)}, n, location=1)
+  p_val <- ks.test(x,y)$p.value
+  expect(p_val >= p_value_min, "rnorm p-value below limit for gamma case")
+})
+
+test_that("test beta distribution", {
+  alpha <- 6
+  beta <- 9
+  x <- rbeta(n,alpha,beta)
+  y <- ars(function(x){dbeta(x, alpha,beta)}, n, location=.5, scale=.1)
+  p_val <- ks.test(x,y)$p.value
+  expect(p_val >= p_value_min, "rnorm p-value below limit for gamma case")
 })
 
 
@@ -45,7 +70,7 @@ test_that("test deriv", {
 
 test_that("test distr sampling", {
   # test normal case
-  n = 1000
+  n
   sample = sample_from_hull(dnorm,n)
   p_val = shapiro.test(sample)$p.value
   expect(p_val >= p_value_min, "rnorm p-value below limit for normal case")

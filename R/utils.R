@@ -30,7 +30,7 @@ generate_initial_abscissae <- function(density, location=0, scale=1, k=4) {
   
   # nlm prints warnings if the density is 0 or undefined for x < 0 (eg. exponential distribution), but
   # it doesn't affect the optimization so we suppress the warnings here
-  mode <- suppressWarnings(nlm(function(x) {-1*log_density(x)}, location)$estimate)
+  mode <- suppressWarnings(nlm(function(x) {-1*density(x)}, location)$estimate)
   abscissae <- seq(mode-2*scale, mode+2*scale, length.out = k)
   abscissae <- abscissae[density(abscissae) > 0]
   return(abscissae)

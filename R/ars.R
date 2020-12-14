@@ -32,12 +32,14 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   )
   
   tangents <- calculate_tangents(abscissae, log_density)
+  deriv_at_absc <- numDeriv::grad(log_density, abscissae, method="simple")
   
   upper_hull <- function(x) {
     intervals = findInterval(x, tangents)
     x_js = abscissae[intervals+1]
     x_js[is.na(x_js)] <- abscissae[length(abscissae)]
-    result = log_density(x_js) + (x - x_js) * numDeriv::grad(log_density, x_js, method="simple")
+    derivs = deriv_at_absc[match(x_js, abscissae)]
+    result = log_density(x_js) + (x - x_js) * derivs
     
     # use a vectorized version of the function for interop with R's integrate
     return(result)
@@ -50,52 +52,61 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
     return(result)
   }
   
+  integration_factor <- integrate(exp_upper_hull, -Inf, Inf)$value
   normalized_upper_hull <- function(x) {
-    return(exp_upper_hull(x) / integrate(exp_upper_hull, -Inf, Inf)$value)
+    return(exp_upper_hull(x) / integration_factor)
   }
   
   lower_hull <- function(x) {
-    if(x < abscissae[1] | x > abscissae[length(abscissae)]) return(-Inf)
-    
-    for (i in 1:(length(abscissae) - 1)) {
-      if (abscissae[i + 1] > x) {
-        j <- i
-        break
-      }
-    }
-    return(
-      (
-        (abscissae[j + 1] - x) * log_density(abscissae[j]) + 
-          (x - abscissae[j]) * log_density(abscissae[j + 1])) / (abscissae[j + 1] - abscissae[j]))
+    intervals = findInterval(x, abscissae)
+    x_js = c(-Inf,abscissae)[intervals+1]
+    x_js_plus_1 = abscissae[intervals+1]
+    res = (((x_js_plus_1 - x) * log_density(x_js) + 
+          (x - x_js) * log_density(x_js_plus_1)) / (x_js_plus_1 - x_js))
+    res[x < abscissae[1] | x > abscissae[length(abscissae)] | is.na(res)] <- -Inf
+    return(res)
   }
-  
+
   num_sampled <- 1
   
   while (num_sampled <= n_samples) {
-    sample <- sample_from_hull(normalized_upper_hull)
-    w <- runif(1)
+    
+    # we expect to be able to take larger batches as the hull
+    # converges, which happens as we take more samples
+    batch_size <- ceiling(num_sampled/2)
+    
+    sample <- sample_from_hull(normalized_upper_hull, batch_size)
+    w <- runif(batch_size)
     
     # evaluate the hulls + density at the sampled point
     lower_bound <- lower_hull(sample)
     upper_bound <- upper_hull(sample)
     sample_log_density <- log_density(sample)
     
-    if (w <= exp(lower_bound - upper_bound)) {
-      # accept the sample
-      samples[num_sampled] <- sample
-      num_sampled <- num_sampled + 1
+    to_accept <- sample[w<=exp(lower_bound - upper_bound)]
+    num_to_accept <- length(to_accept)
+    if (num_to_accept==batch_size) {
+      # accept the entire sample
+      samples[num_sampled:(num_sampled+num_to_accept-1)] <- to_accept
+      num_sampled <- num_sampled + num_to_accept
     } else {
       # update tangents and points
       abscissae <- sort(c(abscissae, sample))
       abscissae <- abscissae[density(abscissae) > 0]
 
+      # update all cached values that change when the abscissae change
+      deriv_at_absc = numDeriv::grad(log_density, abscissae, method="simple")
       tangents <- calculate_tangents(abscissae, log_density)
+      integration_factor <- integrate(exp_upper_hull, -Inf, Inf)$value
       
-      if (w <= exp(sample_log_density - upper_bound)) {
-        # accept the sample only if this condition is met
-        samples[num_sampled] <- sample
-        num_sampled <- num_sampled + 1
+      # accept samples
+      to_accept <- sample[w<=exp(sample_log_density - upper_bound)]
+      num_to_accept <- length(to_accept)
+      if(num_to_accept>0) {
+        samples[num_sampled:(num_sampled+num_to_accept-1)] <- to_accept
+        num_sampled <- num_sampled + num_to_accept
       }
+
     }
   }
   
@@ -106,5 +117,6 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
     msg = "Density is not log-concave for given set of points."
   )
   
+  samples <- samples[1:n_samples] # trim extra samples from final batch
   return(samples)
 }
