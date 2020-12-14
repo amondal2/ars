@@ -51,8 +51,9 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
     return(result)
   }
   
+  integration_factor <- integrate(exp_upper_hull, -Inf, Inf)$value
   normalized_upper_hull <- function(x) {
-    return(exp_upper_hull(x) / integrate(exp_upper_hull, -Inf, Inf)$value)
+    return(exp_upper_hull(x) / integration_factor)
   }
   
   lower_hull <- function(x) {
@@ -91,6 +92,7 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
       abscissae <- abscissae[density(abscissae) > 0]
 
       tangents <- calculate_tangents(abscissae, log_density)
+      integration_factor <- integrate(exp_upper_hull, -Inf, Inf)$value
       
       if (w <= exp(sample_log_density - upper_bound)) {
         # accept the sample only if this condition is met
