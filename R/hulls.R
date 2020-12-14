@@ -12,11 +12,15 @@ calculate_tangents <- function(abscissae, density) {
     typeof(density) == "closure",
     msg = "Density is not a closure"
   )
+  
   tangents <- sapply(1:(length(abscissae) - 1), function(i) {
     
-    return((density(abscissae[i + 1]) - density(abscissae[i]) - abscissae[i + 1] * 
-              numDeriv::grad(density, abscissae[i + 1], method="simple") + abscissae[i] * numDeriv::grad(density, abscissae[i], method="simple")) / 
-             (numDeriv::grad(density, abscissae[i], method="simple") - numDeriv::grad(density, abscissae[i + 1], method="simple")))
+    return(
+      (density(abscissae[i + 1]) - density(abscissae[i]) - abscissae[i + 1] * 
+              numDeriv::grad(density, abscissae[i + 1], method = "simple") + 
+         abscissae[i] * numDeriv::grad(density, abscissae[i], method = "simple")) / 
+             (numDeriv::grad(density, abscissae[i], method = "simple") - 
+                numDeriv::grad(density, abscissae[i + 1], method = "simple")))
   })
   
   return(sort(tangents))
@@ -38,21 +42,43 @@ check_concavity <- function(abscissae, density) {
     typeof(density) == "closure",
     msg = "Density is not a closure"
   )
+  
   derivatives <- round(numDeriv::grad(density, abscissae), 6)
   
-  pairwise_concavity <- sapply(1:(length(derivatives) - 1), function(i) {
-   if(derivatives[i+1] <= derivatives[i]) {
-     return(TRUE)
-   } 
-  
-    return(FALSE)
-   
-  })
+  pairwise_concavity <-
+    sapply(1:(length(derivatives) - 1), function(i) {
+      if (derivatives[i + 1] <= derivatives[i]) {
+        return(TRUE)
+      }
+      
+      return(FALSE)
+      
+    })
   
   # checks that concavity conditions are met for every pair
-  if(sum(unlist(pairwise_concavity)) == (length(derivatives)-1)) {
+  if (sum(unlist(pairwise_concavity)) == (length(derivatives) - 1)) {
     return(TRUE)
   }
   
   return(FALSE)
+}
+
+#' Generate a sample from a given density using distr library
+#' @param hull density of interest (a bounding hull in this context)
+#' @return sample from the density
+sample_from_hull <- function(hull, n_samples = 1) {
+  assertthat::assert_that(
+    typeof(hull) == "closure",
+    msg = "Hull is not a closure"
+  )
+  
+  assertthat::assert_that(
+    is.numeric(n_samples) & n_samples > 0,
+    msg = "Invalid n_samples parameter"
+  )
+  
+  dist <- distr::AbscontDistribution(d = hull)
+  rdist <- distr::r(dist)
+  sample <- rdist(n_samples)
+  return(sample)
 }
