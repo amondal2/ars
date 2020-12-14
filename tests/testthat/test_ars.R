@@ -23,7 +23,7 @@ test_that("test resulting distribution", {
 test_that("test two samples came from the same distribution", {
   n <- 500
   x <- rexp(n)
-  y <- ars(dexp, n)
+  y <- ars(dexp, n, location=1)
   p_val <- ks.test(x,y)$p.value
   expect(p_val >= p_value_min, "rnorm p-value below limit for normal case")
 })
