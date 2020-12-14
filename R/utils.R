@@ -53,5 +53,15 @@ generate_initial_abscissae <-
       }, location)$estimate)
     abscissae <- seq(mode - 2 * scale, mode + 2 * scale, length.out = k)
     abscissae <- abscissae[density(abscissae) > 0]
+    
+    assertthat::assert_that(
+      length(abscissae)>=2,
+      msg = "Invalid starting parameters. Ensure that the `location` 
+      argument is near the mode of the distribution, and that
+      the `scale` parameter is chosen such that 
+      [mode - (2*scale), mode+(2*scale)] is within the support
+      of the probability density."
+    )
+    
     return(abscissae)
   }
