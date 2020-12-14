@@ -3,13 +3,29 @@ context("ars")
 tol = 1e-1
 p_value_min = .01
 
+test_that("test input validation", {
+  density <- 5
+  expect_error(ars(density, 5))
+  
+  n_samples <- "test"
+  expect_error(ars(dnorm, n_samples))
+})
 
 test_that("test resulting distribution", {
   n = 100
   sample = ars(dnorm,n)
   p_val = shapiro.test(sample)$p.value
-  expect(p_val >= p_value_min, "rnorm p-vaue below limit for normal case")
+  expect(p_val >= p_value_min, "rnorm p-value below limit for normal case")
   
+})
+
+
+test_that("test two samples came from the same distribution", {
+  n <- 500
+  x <- rexp(n)
+  y <- ars(dexp, n)
+  p_val <- ks.test(x,y)$p.value
+  expect(p_val >= p_value_min, "rnorm p-value below limit for normal case")
 })
 
 
@@ -32,7 +48,7 @@ test_that("test distr sampling", {
   n = 1000
   sample = sample_from_hull(dnorm,n)
   p_val = shapiro.test(sample)$p.value
-  expect(p_val >= p_value_min, "rnorm p-vaue below limit for normal case")
+  expect(p_val >= p_value_min, "rnorm p-value below limit for normal case")
 })
 
 test_that("test calc tangents", {
@@ -59,4 +75,13 @@ test_that("check log concavity", {
   
   #cauchy should fail 
   expect_false(check_concavity(seq(-10,10), get_log_density(dcauchy)))
+})
+
+test_that("test generate_initial_abscissae", {
+  # mode of a normal distribution is 0, with var 1
+  k <- 4
+  mode <- 0
+  scale <- 1
+  expected_abscissae <- seq(mode-2*scale, mode+2*scale, length.out = k)
+  expect_equal(expected_abscissae, generate_initial_abscissae(dnorm))
 })

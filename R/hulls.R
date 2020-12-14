@@ -11,7 +11,7 @@ calculate_tangents <- function(abscissae, density) {
              (numDeriv::grad(density, abscissae[i], method="simple") - numDeriv::grad(density, abscissae[i + 1], method="simple")))
   })
   
-  return(tangents)
+  return(sort(tangents))
 }
 
 #' Validates that a given density is log-concave for a set of points
