@@ -27,7 +27,7 @@ testthat::test_that("test normal distribution", {
 })
 
 cat("\n")
-test_that("test exponential distribution", {
+testthat::test_that("test exponential distribution", {
   print("Testing sample generation from exponential distribution")
   x <- rexp(n)
   y <- ars(dexp, n, location=1)
@@ -38,7 +38,7 @@ test_that("test exponential distribution", {
 })
 
 cat("\n")
-test_that("test chisq distribution", {
+testthat::test_that("test chisq distribution", {
   print("Testing sample generation from chi-squared distribution (df=5)")
   df <- 5
   x <- rchisq(n, df)
@@ -52,7 +52,7 @@ test_that("test chisq distribution", {
 })
 
 cat("\n")
-test_that("test gamma distribution", {
+testthat::test_that("test gamma distribution", {
   print("Testing sample generation from gamma distribution (a=6, b=9)")
   alpha <- 6
   beta <- 9
@@ -66,7 +66,7 @@ test_that("test gamma distribution", {
 })
 
 cat("\n")
-test_that("test beta distribution", {
+testthat::test_that("test beta distribution", {
   print("Testing sample generation from beta distribution (a=6, b=9)")
   alpha <- 6
   beta <- 9

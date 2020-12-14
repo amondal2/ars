@@ -3,7 +3,7 @@ p_value_min <- .01
 n <- 100
 
 cat("\n")
-test_that("test numerical derivative function", {
+testthat::test_that("test numerical derivative function", {
   print("Testing numerical derivative function from numDeriv library")
   # the deriv of the log normal dist d/dx log(e^(-x^2/2)/sqrt(2 π))= -x
   x <- 3
@@ -23,7 +23,7 @@ test_that("test numerical derivative function", {
 })
 
 cat("\n")
-test_that("test distr sampling", {
+testthat::test_that("test distr sampling", {
   print("Testing numerical sampling function from distr library")
   # test normal case
   sample <- sample_from_hull(dnorm,n)
@@ -33,7 +33,7 @@ test_that("test distr sampling", {
 })
 
 cat("\n")
-test_that("test generate_initial_abscissae", {
+testthat::test_that("test generate_initial_abscissae", {
   # mode of a normal distribution is 0, with var 1
   print("Testing abscissae generating function")
   k <- 4
