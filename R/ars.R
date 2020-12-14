@@ -14,11 +14,11 @@
 #' @export
 ars <-
   function(density,
-           n_samples=10,
+           n_samples = 10,
            location = 0,
            scale = 1) {
     
-    num_starting_abscissae = 4
+    num_starting_abscissae <- 4
     
     assertthat::assert_that(
       typeof(density) == "closure",

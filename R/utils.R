@@ -55,7 +55,7 @@ generate_initial_abscissae <-
     abscissae <- abscissae[density(abscissae) > 0]
     
     assertthat::assert_that(
-      length(abscissae)>=2,
+      length(abscissae) >= 2,
       msg = "Invalid starting parameters. Ensure that the `location` 
       argument is near the mode of the distribution, and that
       the `scale` parameter is chosen such that 
