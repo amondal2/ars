@@ -1,19 +1,25 @@
 #' Entrypoint for 'ars' package. Runs an adaptative
 #' rejection sampling algorithm on a given probability density
 #' and returns the specified number of samples.
-#' @param density A function closure of the density to be sampled from
+#' @param density A function closure of the density to be sampled from.
+#' Input functions must have similar behavior to dnorm, dexp, etc.
 #' @param n_samples The number of samples to sample from the distribution
-#' @param k Number of initial points from which to construct tangents
-#' @param location starting point at which to initialize sampling points, default 0
-#' @param scale value at which to space initial points default 1
+#' @param location starting point at which to initialize sampling points, 
+#' default 0. Should be chosen so that `location` is near the mode 
+#' of the distribution.
+#' @param scale value at which to space initial points (default 1). 
+#' Should be chosen such that [mode - (2*scale), mode+(2*scale)] is within
+#'  the support of the probability density.
 #' @return samples numeric vector of samples from the specified distribution
 #' @export
 ars <-
   function(density,
-           n_samples,
-           k = 4,
+           n_samples=10,
            location = 0,
            scale = 1) {
+    
+    num_starting_abscissae = 4
+    
     assertthat::assert_that(
       typeof(density) == "closure",
       msg = "Density is not a function."
@@ -30,7 +36,7 @@ ars <-
       density, 
       location, 
       scale, 
-      k
+      num_starting_abscissae
     )
     samples <- rep(0, n_samples)
     
@@ -102,7 +108,8 @@ ars <-
       upper_bound <- upper_hull(sample)
       sample_log_density <- log_density(sample)
       
-      to_accept <- sample[w <= exp(lower_bound - upper_bound)]
+      to_accept_mask <- (w <= exp(lower_bound - upper_bound))
+      to_accept <- sample[to_accept_mask]
       num_to_accept <- length(to_accept)
       if (num_to_accept == batch_size) {
         # accept the entire sample
@@ -111,7 +118,7 @@ ars <-
         num_sampled <- num_sampled + num_to_accept
       } else {
         # update tangents and points
-        abscissae <- sort(c(abscissae, sample))
+        abscissae <- sort(c(abscissae, sample[!to_accept_mask]))
         abscissae <- abscissae[density(abscissae) > 0]
         
         # update all cached values that change when the abscissae change

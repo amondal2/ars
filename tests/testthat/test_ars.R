@@ -50,7 +50,7 @@ test_that("test beta distribution", {
   x <- rbeta(n,alpha,beta)
   y <- ars(function(x){dbeta(x, alpha,beta)}, n, location=.5, scale=.1)
   p_val <- ks.test(x,y)$p.value
-  expect(p_val >= p_value_min, "rnorm p-value below limit for gamma case")
+  expect(p_val >= p_value_min, "rnorm p-value below limit for beta case")
 })
 
 
