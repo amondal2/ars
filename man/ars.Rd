@@ -19,7 +19,7 @@ default 0. Should be chosen so that \code{location} is near the mode
 of the distribution.}
 
 \item{scale}{value at which to space initial points (default 1).
-Should be chosen such that \link[=mode - (2*scale), mode+(2*scale)]{mode - (2\emph{scale), mode+(2}scale)} is within
+Should be chosen such that mode - (2\emph{scale), mode+(2}scale) is within
 the support of the probability density.}
 }
 \value{
