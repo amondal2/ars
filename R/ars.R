@@ -9,7 +9,6 @@
 #' @return samples numeric vector of samples from the specified distribution
 #' @export
 ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
-  # should we be able to pass in params & domain?
   assertthat::assert_that(
     typeof(density) == "closure", 
     msg = "Density is not a function."
@@ -22,7 +21,7 @@ ars <- function(density, n_samples, k = 4, location = 0, scale = 1) {
   
   
   log_density <- get_log_density(density)
-  abscissae <- generate_initial_abscisae(density, location, scale, k)
+  abscissae <- generate_initial_abscissae(density, location, scale, k)
  
   samples <- rep(0, n_samples)
   

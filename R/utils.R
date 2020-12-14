@@ -25,12 +25,12 @@ sample_from_hull <- function(hull, n_samples=1) {
 #' @param scale width of the spacing of the points around the model, default 1
 #' @param k number of points to initialize, default 4
 #' @return vector of points
-generate_initial_abscisae <- function(density, location=0, scale=1, k=4) {
+generate_initial_abscissae <- function(density, location=0, scale=1, k=4) {
   log_density <- get_log_density(density)
-  # todo fix warnings
   
-  mode <- nlm(function(x) {-1*log_density(x)}, location)$estimate
-  
+  # nlm prints warnings if the density is 0 or undefined for x < 0 (eg. exponential distribution), but
+  # it doesn't affect the optimization so we suppress the warnings here
+  mode <- suppressWarnings(nlm(function(x) {-1*log_density(x)}, location)$estimate)
   abscissae <- seq(mode-2*scale, mode+2*scale, length.out = k)
   abscissae <- abscissae[density(abscissae) > 0]
   return(abscissae)
