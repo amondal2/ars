@@ -6,18 +6,21 @@
 rejection sampling algorithm on a given probability density
 and returns the specified number of samples.}
 \usage{
-ars(density, n_samples, k = 4, location = 0, scale = 1)
+ars(density, n_samples = 10, location = 0, scale = 1)
 }
 \arguments{
-\item{density}{A function closure of the density to be sampled from}
+\item{density}{A function closure of the density to be sampled from.
+Input functions must have similar behavior to dnorm, dexp, etc.}
 
 \item{n_samples}{The number of samples to sample from the distribution}
 
-\item{k}{Number of initial points from which to construct tangents}
+\item{location}{starting point at which to initialize sampling points,
+default 0. Should be chosen so that \code{location} is near the mode
+of the distribution.}
 
-\item{location}{starting point at which to initialize sampling points, default 0}
-
-\item{scale}{value at which to space initial points default 1}
+\item{scale}{value at which to space initial points (default 1).
+Should be chosen such that \link[=mode - (2*scale), mode+(2*scale)]{mode - (2\emph{scale), mode+(2}scale)} is within
+the support of the probability density.}
 }
 \value{
 samples numeric vector of samples from the specified distribution
