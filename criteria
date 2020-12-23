@@ -1,0 +1,56 @@
+Grade: 92
+
+## ease of accessing package, help, tests:
+
+Fine, though instructions for using package should rely on it being a package and not load_all().
+
+## main help page:
+
+Clear. No information about the ARS algorithm. No example usage.
+
+## quality of user interface:
+
+Requires user to give location, scale to help with starting points. In general allowing user to provide such info but not requiring it would be best.
+
+## performance on my tests:
+
+Can't handle narrow normal density centered at 40 (won't run)
+Starting value issues with truncated normal densities (various R errors, so doesn't run), because code assumes mode is not at boundary.
+Passes K-S test for double exponential only if give actual mode as 'location'; otherwise fails. 
+
+## t density output:
+
+Detects non-log-concavity.
+
+## presence of tests:
+
+Tests pass.
+
+K-S tests for a few distributions
+tested Cauchy
+a few tests of inputs
+limited unit tests
+
+## code efficiency:
+
+Fast: 0.35 sec. for 5000 samples
+
+Very nice use of expanding batch size. 
+
+## comments in code:
+
+Good
+
+## code organization/clarity/elegance:
+
+Clearly organized and easy to follow. However, functions such as exp_upper_hull probably best organized by not having nested within main function. These functions also rely on objects not local to the function.
+
+No need to use numerical integration - you can do the integrals in closed form. Your code would likely be really fast if you did the integrals analytically.
+
+## equality of workload:
+
+Good. I like how you divided the coding effort in a way that allowed for real collaboration/discussion. 
+
+## writeup:
+
+Clear. I would have liked to see some demonstration of usage/plotting of results. 
